@@ -1,13 +1,25 @@
-import java.util.*;
+import java.util.List;
+
 public class ResumenDTO {
-    private int totalCitas;
-    private int totalPalabras;
-    private java.util.List<ItemResumen> fragmentos;
-    public ResumenDTO() { fragmentos = new java.util.ArrayList<>(); }
-    public void setTotalCitas(int totalCitas) { this.totalCitas = totalCitas; }
-    public void setTotalPalabras(int totalPalabras) { this.totalPalabras = totalPalabras; }
-    public void addItem(ItemResumen item) { fragmentos.add(item); }
-    public int getTotalCitas() { return totalCitas; }
-    public int getTotalPalabras() { return totalPalabras; }
-    public java.util.List<ItemResumen> getFragmentos() { return fragmentos; }
+    private Usuario usuario;
+    private List<Documento> documentos;
+    private List<Fragmento> fragmentos;
+
+    public ResumenDTO(Usuario usuario, List<Documento> documentos, List<Fragmento> fragmentos) {
+        this.usuario = usuario;
+        this.documentos = documentos;
+        this.fragmentos = fragmentos;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public List<Documento> getDocumentos() {
+        return documentos;
+    }
+
+    public List<Fragmento> getFragmentos() {
+        return fragmentos;
+    }
 }

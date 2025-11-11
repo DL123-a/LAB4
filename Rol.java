@@ -1,2 +1,5 @@
-public enum TipoEtiqueta { TEMA, ACTOR, LUGAR, SENTIMIENTO, OTRO }
-
+public enum Rol {
+    INVESTIGADOR,
+    ANALISTA,
+    SUPERVISOR
+}

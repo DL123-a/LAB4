@@ -1,11 +1,13 @@
-public class FuenteTextoPlano implements FuenteTexto {
-    private String nombre;
-    private String contenido;
-    public FuenteTextoPlano(String nombre, String contenido) {
-        this.nombre = nombre;
-        this.contenido = contenido;
+public class FuenteTextoPlano extends FuenteTexto {
+    private String texto;
+
+    public FuenteTextoPlano(String texto) {
+        this.texto = texto;
     }
-    public String obtenerContenido() { return contenido; }
-    public String obtenerNombre() { return nombre; }
+
+    @Override
+    public String getTexto() {
+        return texto;
+    }
 }
 

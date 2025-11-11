@@ -1,87 +1,89 @@
 import java.util.*;
+import javax.swing.*;
+
 public class Controlador {
-    private List<Documento> documentos = new ArrayList<>();
-    private List<Etiqueta> etiquetas = new ArrayList<>();
-    private List<Usuario> usuarios = new ArrayList<>();
+    private Usuario usuarioActual;
+    private List<Documento> documentos;
+    private List<Fragmento> fragmentos;
+    private List<Etiqueta> etiquetas;
 
-    public Usuario registrarUsuario(String nombre, Rol rol) {
-        Usuario u = new Usuario(nombre, rol);
-        usuarios.add(u);
-        return u;
+    private JFrame ventanaPrincipal;
+    private PanelCargarTexto panelCargarTexto;
+    private PanelFragmento panelFragmento;
+    private PanelResumen panelResumen;
+
+    public Controlador() {
+        documentos = new ArrayList<>();
+        fragmentos = new ArrayList<>();
+        etiquetas = new ArrayList<>();
     }
-    public Documento importarFuente(FuenteTexto fuente, Usuario propietario) {
-        Documento doc = new Documento(fuente.obtenerNombre(), fuente.obtenerContenido(), propietario);
+
+    public void iniciarPrograma() {
+        // Ventana principal
+        ventanaPrincipal = new JFrame("Laboratorio 4 - Sistema de Codificación Antropológica");
+        ventanaPrincipal.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        ventanaPrincipal.setSize(800, 600);
+
+        // Login inicial
+        String nombre = JOptionPane.showInputDialog("Ingrese su nombre de usuario:");
+        Rol rol = (Rol) JOptionPane.showInputDialog(
+            null,
+            "Seleccione su rol:",
+            "Inicio de sesión",
+            JOptionPane.QUESTION_MESSAGE,
+            null,
+            Rol.values(),
+            Rol.INVESTIGADOR
+        );
+
+        usuarioActual = new Usuario(nombre, rol);
+
+        // Crear paneles
+        panelCargarTexto = new PanelCargarTexto(this);
+        panelFragmento = new PanelFragmento(this);
+        panelResumen = new PanelResumen(this);
+
+        ventanaPrincipal.add(panelCargarTexto);
+        ventanaPrincipal.setVisible(true);
+    }
+
+    public void mostrarPanelCargarTexto() {
+        cambiarPanel(panelCargarTexto);
+    }
+
+    public void mostrarPanelFragmento() {
+        cambiarPanel(panelFragmento);
+    }
+
+    public void mostrarPanelResumen() {
+        panelResumen.actualizarResumen();
+        cambiarPanel(panelResumen);
+    }
+
+    private void cambiarPanel(JPanel nuevo) {
+        ventanaPrincipal.getContentPane().removeAll();
+        ventanaPrincipal.add(nuevo);
+        ventanaPrincipal.revalidate();
+        ventanaPrincipal.repaint();
+    }
+
+    public void agregarDocumento(Documento doc) {
         documentos.add(doc);
-        return doc;
     }
 
-    public Etiqueta crearEtiqueta(String nombre, TipoEtiqueta tipo) {
-        Etiqueta e = new Etiqueta(nombre, tipo);
-        etiquetas.add(e);
-        return e;
-    }
-    public Etiqueta crearEtiqueta(String nombre) { return crearEtiqueta(nombre, TipoEtiqueta.OTRO); }
-    public List<Etiqueta> listarEtiquetas() { return etiquetas; }
-    public Fragmento crearFragmento(Documento doc, int inicio, int fin) { return doc.crearFragmento(inicio, fin); }
-    public void aplicarEtiquetaAFragmento(Fragmento frag, Etiqueta etiqueta, Usuario autor) {
-        boolean ya = frag.getCodings().stream()
-                .anyMatch(c -> c.getEtiqueta().getId().equals(etiqueta.getId()));
-        if (ya) {
-            
-            frag.quitarCodingPorEtiqueta(etiqueta);
-        } else {
-            
-            frag.agregarCoding(new Coding(frag, etiqueta, autor));
-        }
-    
-}
-    public void quitarEtiquetaDeFragmento(Fragmento frag, Etiqueta etiqueta) { frag.quitarCodingPorEtiqueta(etiqueta); }
-
-    public ResumenDTO obtenerResumenPorEtiqueta(Etiqueta etiqueta) {
-        ResumenDTO dto = new ResumenDTO();
-        int tc = 0, tp = 0;
-        for (Documento doc : documentos) {
-            for (Fragmento frag : doc.getFragmentos()) {
-                boolean tiene = frag.getCodings().stream()....anyMatch(c -> c.getEtiqueta().getId().equals(etiqueta.getId()));
-                if (tiene) {
-                    tc++;
-                    String texto = frag.getTexto();
-                    tp += contarPalabras(texto);
-                }
-            }
-        }
-        dto.totalCodings = tc;
-        dto.totalPalabras = tp;
-        dto.etiqueta = etiqueta;
-        return dto;
+    public void agregarFragmento(Fragmento frag) {
+        fragmentos.add(frag);
     }
 
-    public List<ItemResumen> obtenerResumenPorDocumento() {
-        List<ItemResumen> res = new ArrayList<>();
-        for (Documento doc : documentos) {
-            ItemResumen md = new ItemResumen();
-            md.documento = doc;
-            md.palabras = contarPalabras(doc.getContenido());
-            Map<Etiqueta,Integer> conteo = new HashMap<>();
-            for (Fragmento frag : doc.getFragmentos()) {
-                for (Coding c : frag.getCodings()) {
-                    Etiqueta et = c.getEtiqueta();
-                    conteo.put(et, conteo.getOrDefault(et, 0)+1);
-                }
-            }
-            md.etiquetasUsadas = new ArrayList<>(conteo.keySet());
-            Etiqueta mas = null; int max = 0;
-            for (Map.Entry<Etiqueta,Integer> en : conteo.entrySet()) {
-                if (en.getValue() > max) { max = en.getValue(); mas = en.getKey(); }
-            }
-            md.etiquetaMasFrecuente = mas;
-            res.add(md);
-        }
-        return res;
+    public List<Documento> getDocumentos() {
+        return documentos;
     }
 
-    private int contarPalabras(String texto) {
-        if (texto == null || texto.isEmpty()) return 0;
-        return texto.trim().split("\\s+").length;
+    public List<Fragmento> getFragmentos() {
+        return fragmentos;
+    }
+
+    public Usuario getUsuarioActual() {
+        return usuarioActual;
     }
 }

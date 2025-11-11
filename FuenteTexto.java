@@ -1,1 +1,4 @@
-public interface FuenteTexto { String obtenerContenido(); String obtenerNombre(); }
+public abstract class FuenteTexto {
+    public abstract String getTexto();
+}
+
