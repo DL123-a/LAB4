@@ -1,15 +1,14 @@
 import java.util.UUID;
-
 public class Usuario {
-    private final UUID id;
+    private UUID id;
     private String nombre;
-
-    public Usuario(String nombre) {
+    private Rol rol;
+    public Usuario(String nombre, Rol rol) {
         this.id = UUID.randomUUID();
         this.nombre = nombre;
+        this.rol = rol;
     }
-
     public UUID getId() { return id; }
     public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
+    public Rol getRol() { return rol; }
 }

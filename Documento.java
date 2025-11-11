@@ -1,35 +1,31 @@
 import java.util.*;
-
 public class Documento {
-    private final UUID id;
+    private java.util.UUID id;
     private String titulo;
     private String contenido;
     private Usuario propietario;
-    private final List<Fragmento> fragmentos;
-
-    public Documento(String titulo, String contenido) {
-        this.id = UUID.randomUUID();
+    private java.util.List<Fragmento> fragmentos;
+    public Documento(String titulo, String contenido, Usuario propietario) {
+        this.id = java.util.UUID.randomUUID();
         this.titulo = titulo;
         this.contenido = contenido;
-        this.fragmentos = new ArrayList<>();
+        this.propietario = propietario;
+        this.fragmentos = new java.util.ArrayList<>();
     }
-
-    // Métodos del análisis
+    public Documento(String titulo, String contenido) { this(titulo, contenido, null); }
     public Fragmento crearFragmento(int inicio, int fin) {
-        if (inicio < 0 || fin > contenido.length() || inicio >= fin)
-            throw new IllegalArgumentException("Rango inválido");
+        if (inicio < 0 || fin > contenido.length() || inicio >= fin) {
+            throw new IllegalArgumentException("rango invalido");
+        }
         Fragmento f = new Fragmento(this, inicio, fin);
         fragmentos.add(f);
         return f;
     }
-
-    public List<Fragmento> getFragmentos() {
-        return Collections.unmodifiableList(fragmentos);
-    }
-
+    public java.util.List<Fragmento> getFragmentos() { return fragmentos; }
     public String getContenido() { return contenido; }
-
-    // Getters útiles para ResumenDTO
-    public UUID getId() { return id; }
     public String getTitulo() { return titulo; }
+    public java.util.UUID getId() { return id; }
+    public Usuario getPropietario() { return propietario; }
+    public String toString() { return titulo; }
 }
+

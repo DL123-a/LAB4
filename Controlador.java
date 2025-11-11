@@ -1,90 +1,117 @@
 import java.util.*;
-
 public class Controlador {
-    private final List<Documento> documentos = new ArrayList<>();
-    private final List<Etiqueta> tags = new ArrayList<>();
+    private List<Documento> documentos = new ArrayList<>();
+    private List<Etiqueta> etiquetas = new ArrayList<>();
+    private List<Usuario> usuarios = new ArrayList<>();
 
-    // Del análisis
-    public Documento importarDocumento(String titulo, String texto) {
-        Documento d = new Documento(titulo, texto);
-        documentos.add(d);
-        return d;
+    public Usuario registrarUsuario(String nombre, Rol rol) {
+        Usuario u = new Usuario(nombre, rol);
+        usuarios.add(u);
+        return u;
     }
-
-    public List<Documento> listarDocumentos() {
-        return Collections.unmodifiableList(documentos);
+    public Documento importarFuente(FuenteTexto fuente, Usuario propietario) {
+        Documento doc = new Documento(fuente.obtenerNombre(), fuente.obtenerContenido(), propietario);
+        documentos.add(doc);
+        return doc;
     }
-
-    public Fragmento crearFragmento(Documento doc, int inicio, int fin) {
-        return doc.crearFragmento(inicio, fin);
-    }
-
-    public void aplicarTag(Fragmento frag, Etiqueta etiqueta) {
-        // Evitar duplicados: si ya hay un Coding con esa etiqueta, no agregar otro
-        boolean existe = frag.getCodings().stream()
-                .anyMatch(c -> c.getEtiqueta().equals(etiqueta));
-        if (!existe) frag.agregarCoding(new Coding(frag, etiqueta));
-    }
-
-    public void quitarTag(Fragmento frag, Etiqueta etiqueta) {
-        frag.quitarCodingPorTag(etiqueta);
-    }
-
-    public Etiqueta crearTag(String nombre) {
-        Etiqueta e = new Etiqueta(nombre, "#CCCCCC");
-        tags.add(e);
+    public List<Documento> listarDocumentos() { return documentos; }
+    public Etiqueta crearEtiqueta(String nombre, TipoEtiqueta tipo) {
+        for (Etiqueta e : etiquetas) if (e.getNombre().equalsIgnoreCase(nombre)) return e;
+        Etiqueta e = new Etiqueta(nombre, tipo);
+        etiquetas.add(e);
         return e;
     }
+    public Etiqueta crearEtiqueta(String nombre) { return crearEtiqueta(nombre, TipoEtiqueta.OTRO); }
+    public List<Etiqueta> listarEtiquetas() { return etiquetas; }
+    public Fragmento crearFragmento(Documento doc, int inicio, int fin) { return doc.crearFragmento(inicio, fin); }
+    public void aplicarEtiquetaAFragmento(Fragmento frag, Etiqueta etiqueta, Usuario autor) {
+        boolean ya = frag.getCodings().stream().anyMatch(c -> c.getEtiqueta().getId().equals(etiqueta.getId()));
+        if (!ya) frag.agregarCoding(new Coding(frag, etiqueta, autor));
+    }
+    public void quitarEtiquetaDeFragmento(Fragmento frag, Etiqueta etiqueta) { frag.quitarCodingPorEtiqueta(etiqueta); }
 
-    // Resumen por etiqueta
-    public ResumenDTO obtenerResumenPorTag(Etiqueta etiqueta) {
-        List<ResumenDTO.ItemResumen> items = new ArrayList<>();
-        int totalPalabras = 0;
-
-        for (Documento d : documentos) {
-            for (Fragmento f : d.getFragmentos()) {
-                boolean tiene = f.getCodings().stream()
-                        .anyMatch(c -> c.getEtiqueta().equals(etiqueta));
+    public ResumenDTO obtenerResumenPorEtiqueta(Etiqueta etiqueta) {
+        ResumenDTO dto = new ResumenDTO();
+        int tc = 0, tp = 0;
+        for (Documento doc : documentos) {
+            for (Fragmento frag : doc.getFragmentos()) {
+                boolean tiene = frag.getCodings().stream().anyMatch(c -> c.getEtiqueta().getId().equals(etiqueta.getId()));
                 if (tiene) {
-                    String texto = f.getTexto();
-                    items.add(new ResumenDTO.ItemResumen(
-                            f.getId(), texto, d.getTitulo(), f.getInicio(), f.getFin()
-                    ));
-                    totalPalabras += contarPalabras(texto);
+                    tc++;
+                    String texto = frag.getTexto();
+                    tp += contarPalabras(texto);
+                    dto.addItem(new ItemResumen(frag.getId().toString(), texto, doc.getTitulo(), frag.getInicio(), frag.getFin()));
                 }
             }
         }
-        return new ResumenDTO(items.size(), totalPalabras, items);
+        dto.setTotalCitas(tc);
+        dto.setTotalPalabras(tp);
+        return dto;
     }
 
-    // Resumen por documento
     public ResumenDTO obtenerResumenPorDocumento(Documento doc) {
-        List<ResumenDTO.ItemResumen> items = new ArrayList<>();
-        int totalPalabras = 0;
-
-        for (Fragmento f : doc.getFragmentos()) {
-            String texto = f.getTexto();
-            items.add(new ResumenDTO.ItemResumen(
-                    f.getId(), texto, doc.getTitulo(), f.getInicio(), f.getFin()
-            ));
-            totalPalabras += contarPalabras(texto);
+        ResumenDTO dto = new ResumenDTO();
+        int tc = 0, tp = 0;
+        for (Fragmento frag : doc.getFragmentos()) {
+            tc++;
+            String texto = frag.getTexto();
+            tp += contarPalabras(texto);
+            dto.addItem(new ItemResumen(frag.getId().toString(), texto, doc.getTitulo(), frag.getInicio(), frag.getFin()));
         }
-        return new ResumenDTO(items.size(), totalPalabras, items);
+        dto.setTotalCitas(tc);
+        dto.setTotalPalabras(tp);
+        return dto;
     }
 
-    // Utilidad local (privada) para el totalPalabras requerido por el análisis
-    private int contarPalabras(String s) {
-        if (s == null || s.isBlank()) return 0;
-        int count = 0;
-        boolean enPalabra = false;
-        for (char c : s.toCharArray()) {
-            if (Character.isWhitespace(c)) {
-                if (enPalabra) { count++; enPalabra = false; }
-            } else {
-                enPalabra = true;
+    public double porcentajeTextoPorEtiqueta(Etiqueta etiqueta) {
+        int totalEti = 0;
+        int totalGlobal = 0;
+        for (Documento doc : documentos) {
+            if (doc.getContenido() != null && !doc.getContenido().isEmpty()) {
+                totalGlobal += contarPalabras(doc.getContenido());
+            }
+            for (Fragmento frag : doc.getFragmentos()) {
+                boolean tiene = frag.getCodings().stream().anyMatch(c -> c.getEtiqueta().getId().equals(etiqueta.getId()));
+                if (tiene) totalEti += contarPalabras(frag.getTexto());
             }
         }
-        if (enPalabra) count++;
-        return count;
+        if (totalGlobal == 0) return 0.0;
+        return (totalEti * 100.0) / totalGlobal;
+    }
+
+    public static class MetricasDocumento {
+        public Documento documento;
+        public int totalFragmentos;
+        public List<Etiqueta> etiquetasUsadas;
+        public Etiqueta etiquetaMasFrecuente;
+    }
+
+    public List<MetricasDocumento> metricasPorDocumento() {
+        List<MetricasDocumento> res = new ArrayList<>();
+        for (Documento doc : documentos) {
+            MetricasDocumento md = new MetricasDocumento();
+            md.documento = doc;
+            md.totalFragmentos = doc.getFragmentos().size();
+            Map<Etiqueta, Integer> conteo = new HashMap<>();
+            for (Fragmento frag : doc.getFragmentos()) {
+                for (Coding c : frag.getCodings()) {
+                    Etiqueta et = c.getEtiqueta();
+                    conteo.put(et, conteo.getOrDefault(et, 0)+1);
+                }
+            }
+            md.etiquetasUsadas = new ArrayList<>(conteo.keySet());
+            Etiqueta mas = null; int max = 0;
+            for (Map.Entry<Etiqueta,Integer> en : conteo.entrySet()) {
+                if (en.getValue() > max) { max = en.getValue(); mas = en.getKey(); }
+            }
+            md.etiquetaMasFrecuente = mas;
+            res.add(md);
+        }
+        return res;
+    }
+
+    private int contarPalabras(String texto) {
+        if (texto == null || texto.isEmpty()) return 0;
+        return texto.trim().split("\s+").length;
     }
 }

@@ -1,3 +1,1 @@
-public class FuenteTexto {
-    
-}
+public interface FuenteTexto { String obtenerContenido(); String obtenerNombre(); }
