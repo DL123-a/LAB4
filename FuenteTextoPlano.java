@@ -1,8 +1,8 @@
-public class FuenteTextoPlano extends FuenteTexto {
-    private String texto;
+public class FuenteTextoPlano implements FuenteTexto {
+    private final String texto;
 
     public FuenteTextoPlano(String texto) {
-        this.texto = texto;
+        this.texto = texto != null ? texto : "";
     }
 
     @Override
@@ -10,4 +10,3 @@ public class FuenteTextoPlano extends FuenteTexto {
         return texto;
     }
 }
-

@@ -1,5 +1,5 @@
 public class Etiqueta {
-    private TipoEtiqueta tipo;
+    private final TipoEtiqueta tipo;
 
     public Etiqueta(TipoEtiqueta tipo) {
         this.tipo = tipo;
@@ -7,6 +7,11 @@ public class Etiqueta {
 
     public TipoEtiqueta getTipo() {
         return tipo;
+    }
+
+    @Override
+    public String toString() {
+        return tipo.toString();
     }
 }
 

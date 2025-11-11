@@ -1,42 +1,49 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
 
 public class PanelCargarTexto extends JPanel {
-    private Controlador controlador;
-    private JTextArea areaTexto;
-    private JTextField campoTitulo;
+    private final Controlador controlador;
+    private final JTextField campoTitulo;
+    private final JTextArea areaTexto;
+    private final JButton btnCargar, btnIrFragmentos;
 
     public PanelCargarTexto(Controlador controlador) {
         this.controlador = controlador;
-        setLayout(new BorderLayout());
+        setBorder(BorderFactory.createTitledBorder("Cargar Documento"));
+        setLayout(new BorderLayout(6,6));
+        setPreferredSize(new Dimension(420, 300));
 
-        JLabel titulo = new JLabel("Cargar Documento", SwingConstants.CENTER);
-        titulo.setFont(new Font("Arial", Font.BOLD, 18));
+        campoTitulo = new JTextField();
+        areaTexto = new JTextArea(8, 30);
+        areaTexto.setLineWrap(true);
+        areaTexto.setWrapStyleWord(true);
 
-        campoTitulo = new JTextField("Título del documento");
-        areaTexto = new JTextArea("Escriba o pegue aquí el texto...");
-        JButton botonGuardar = new JButton("Guardar Documento");
-        JButton botonFragmento = new JButton("Ir a Fragmentos");
-        JButton botonResumen = new JButton("Ver Resumen");
+        btnCargar = new JButton("Cargar documento");
+        btnIrFragmentos = new JButton("Ir a fragmentos");
 
-        JPanel panelBotones = new JPanel();
-        panelBotones.add(botonGuardar);
-        panelBotones.add(botonFragmento);
-        panelBotones.add(botonResumen);
-
-        add(titulo, BorderLayout.NORTH);
-        add(new JScrollPane(areaTexto), BorderLayout.CENTER);
-        add(campoTitulo, BorderLayout.SOUTH);
-        add(panelBotones, BorderLayout.PAGE_END);
-
-        botonGuardar.addActionListener(e -> {
-            Documento doc = new Documento(campoTitulo.getText(), new FuenteTextoPlano(areaTexto.getText()));
-            controlador.agregarDocumento(doc);
-            JOptionPane.showMessageDialog(this, "Documento guardado correctamente.");
+        btnCargar.addActionListener(e -> {
+            String titulo = campoTitulo.getText().trim();
+            String texto = areaTexto.getText();
+            if (titulo.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Ingrese un título válido.");
+                return;
+            }
+            controlador.importarDocumento(titulo, texto);
+            JOptionPane.showMessageDialog(this, "Documento cargado correctamente.");
         });
 
-        botonFragmento.addActionListener(e -> controlador.mostrarPanelFragmento());
-        botonResumen.addActionListener(e -> controlador.mostrarPanelResumen());
+        btnIrFragmentos.addActionListener(e -> JOptionPane.showMessageDialog(this, "Baja al panel de Fragmentos."));
+
+        JPanel top = new JPanel(new BorderLayout());
+        top.add(new JLabel("Título:"), BorderLayout.WEST);
+        top.add(campoTitulo, BorderLayout.CENTER);
+
+        JPanel south = new JPanel();
+        south.add(btnCargar);
+        south.add(btnIrFragmentos);
+
+        add(top, BorderLayout.NORTH);
+        add(new JScrollPane(areaTexto), BorderLayout.CENTER);
+        add(south, BorderLayout.SOUTH);
     }
 }

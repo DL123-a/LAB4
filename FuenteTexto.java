@@ -1,4 +1,4 @@
-public abstract class FuenteTexto {
-    public abstract String getTexto();
+public interface FuenteTexto {
+    String getTexto();
 }
 

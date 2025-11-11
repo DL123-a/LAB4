@@ -1,9 +1,9 @@
 import java.util.List;
 
 public class ResumenDTO {
-    private Usuario usuario;
-    private List<Documento> documentos;
-    private List<Fragmento> fragmentos;
+    private final Usuario usuario;
+    private final List<Documento> documentos;
+    private final List<Fragmento> fragmentos;
 
     public ResumenDTO(Usuario usuario, List<Documento> documentos, List<Fragmento> fragmentos) {
         this.usuario = usuario;
@@ -11,15 +11,7 @@ public class ResumenDTO {
         this.fragmentos = fragmentos;
     }
 
-    public Usuario getUsuario() {
-        return usuario;
-    }
-
-    public List<Documento> getDocumentos() {
-        return documentos;
-    }
-
-    public List<Fragmento> getFragmentos() {
-        return fragmentos;
-    }
+    public Usuario getUsuario() { return usuario; }
+    public List<Documento> getDocumentos() { return documentos; }
+    public List<Fragmento> getFragmentos() { return fragmentos; }
 }
